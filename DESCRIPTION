@@ -1,0 +1,29 @@
+Package: rankMANOVA
+Type: Package
+Title: Calculates MANOVA Bootstrap Test Based on Ranks
+Version: 0.0.1
+Date: 2017-06-28
+Author: Sarah Friedrich
+Maintainer: Sarah Friedrich <sarah.friedrich@uni-ulm.de>
+Depends: 
+    R (>= 3.2.3)   
+Description: tba
+License: GPL-2 | GPL-3
+Imports: 
+    plyr (>= 1.8.3),
+    MASS (>= 7.3-43),
+    Matrix (>= 1.2-2),
+    magic (>= 1.5-6),
+    plotrix (>= 3.5-12),
+    parallel,
+    methods,
+    ellipse
+LazyData: TRUE
+Suggests: 
+    RGtk2 (>= 2.20.31),
+    knitr,
+    rmarkdown,
+    HSAUR,
+    tidyr
+RoxygenNote: 5.0.1
+VignetteBuilder: knitr, rmarkdown
