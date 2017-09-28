@@ -3,10 +3,9 @@ print.rankMANOVA <- function(x, ...) {
   a <- x$input
   cat("Call:", "\n")
   print(a$formula)
-  cat("\n", "Test statistic:", "\n", sep = "")
+  cat("\n", "Test:", "\n", sep = "")
   print(x$Test)
 }
-
 
 #' @export
 summary.rankMANOVA <- function (object, ...) {
@@ -15,6 +14,6 @@ summary.rankMANOVA <- function (object, ...) {
   print(a$formula)
   cat("\n", "Descriptive:", "\n", sep = "")
   print(object$Descriptive)
-  cat("\n", "Test Statistic :", "\n", sep = "")
+  cat("\n", "Test:", "\n", sep = "")
   print(object$Test)
 }

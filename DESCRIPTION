@@ -1,13 +1,15 @@
 Package: rankMANOVA
 Type: Package
-Title: Calculates MANOVA Bootstrap Test Based on Ranks
+Title: Rank-Based Tests for Multivariate Data in Nonparametric Factorial Designs
 Version: 0.0.1
-Date: 2017-06-28
-Author: Sarah Friedrich
+Date: 2017-09-28
+Author: Sarah Friedrich, Dennis Dobler, Markus Pauly
 Maintainer: Sarah Friedrich <sarah.friedrich@uni-ulm.de>
-Depends: 
-    R (>= 3.2.3)   
-Description: tba
+Depends: R (>= 3.4.1)   
+Description: Implemented are an ANOVA-type test statistic for testing hypotheses formulated in Mann-Whitney-type effects in nonparametric factorial designs. Statistical inference is based on a wild or a sample-specific 
+         bootstrap approach. The unweighted treatment effects considered do not depend on sample sizes and allow for
+         transitive ordering. The package thus provides an extension of the univariate rankFD package to multivariate 
+         data.
 License: GPL-2 | GPL-3
 Imports: 
     plyr (>= 1.8.3),
@@ -16,14 +18,8 @@ Imports:
     magic (>= 1.5-6),
     plotrix (>= 3.5-12),
     parallel,
-    methods,
-    ellipse
+    methods   
 LazyData: TRUE
-Suggests: 
-    RGtk2 (>= 2.20.31),
-    knitr,
-    rmarkdown,
-    HSAUR,
-    tidyr
+Suggests:
+    ElemStatLearn (>= 2015.6.26)
 RoxygenNote: 5.0.1
-VignetteBuilder: knitr, rmarkdown

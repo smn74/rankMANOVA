@@ -5,11 +5,11 @@ rankbs <- function(Y, n, H, d, iter, alpha, CPU, seed, resampling){
 
   w <- function(Y, l, i){
     Y_new <- rbind(Y[[l]]$response, Y[[i]]$response)
-    Ränge <- apply(Y_new, 2, rank)
+    Ranks <- apply(Y_new, 2, rank)
 
     Ra <- list()
-    Ra[[l]] <- Ränge[1:n[l], ]
-    Ra[[i]] <- Ränge[(n[l]+1):(n[l]+n[i]), ]
+    Ra[[l]] <- Ranks[1:n[l], ]
+    Ra[[i]] <- Ranks[(n[l]+1):(n[l]+n[i]), ]
     w <- 1/n[l]*(colMeans(Ra[[i]]) - (n[i]+1)/2)
     return(w)
   }
@@ -67,7 +67,7 @@ rankbs <- function(Y, n, H, d, iter, alpha, CPU, seed, resampling){
     n_s <- n[s]
     n_r <- n[r]
 
-    Ra_r <- R_sr[(n_s+1):(n_s+n_r), ]    # passende n_r Ränge
+    Ra_r <- R_sr[(n_s+1):(n_s+n_r), ]    # passende n_r Ranks
     Z_sr <- 1/n_s*((Ra_r- R_r) - (colMeans(Ra_r)-(n_r+1)/2))
     return(Z_sr)
   }

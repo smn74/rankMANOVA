@@ -2,17 +2,19 @@
 % Please edit documentation in R/rankMANOVA-function.R
 \name{rankMANOVA}
 \alias{rankMANOVA}
-\title{Rank-based Tests for Multivariate Data in Semi-Parametric Factorial Designs}
+\title{Rank-based Tests for Multivariate Data in Nonparametric Factorial Designs}
 \usage{
-rankMANOVA(formula, data, iter = 10000, alpha = 0.05, CPU, seed)
+rankMANOVA(formula, data, iter = 10000, alpha = 0.05, CPU, seed,
+  resampling = "WildBS")
 }
 \arguments{
 \item{formula}{A model \code{\link{formula}} object. The left hand side
-contains the response variable and the right hand side contains the factor
-variables of interest. An interaction term must be specified.}
+contains the response variables and the right hand side contains the factor
+variables of interest. An interaction term must be specified. Data must be
+provided in wide format.}
 
-\item{data}{A data.frame, list or environment containing the variables in
-\code{formula}. Data must be in long format.}
+\item{data}{A data.frame containing the variables in
+\code{formula}.}
 
 \item{iter}{The number of iterations used for calculating the resampled
 statistic. The default option is 10,000.}
@@ -25,64 +27,48 @@ detected via \code{\link[parallel]{detectCores}}.}
 \item{seed}{A random seed for the resampling procedure. If omitted, no
 reproducible seed is set.}
 
-\item{subject}{The column name of the subjects in the data.}
-
-\item{resampling}{The resampling method to be used, one of "paramBS"
-(parametric bootstrap approach) and "WildBS" (wild bootstrap approach with
-Rademacher weights). The Wild Bootstrap is calculated for all test statistics.}
-
-\item{nested.levels.unique}{A logical specifying whether the levels of the nested factor(s)
-are labeled uniquely or not. Default is FALSE, i.e., the levels of the nested
-factor are the same for each level of the main factor.}
+\item{resampling}{The resampling method to be used, one of "bootstrap"
+(sample-specific bootstrap approach) and "WildBS" (wild bootstrap approach with
+Rademacher weights). The default is "WildBS".}
 }
 \value{
-A \code{MANOVA} object containing the following components:
-  \item{Descriptive}{Some descriptive statistics of the data for all factor
+A \code{rankMANOVA} object containing the following components:
+\item{Descriptive}{Some descriptive statistics of the data for all factor
   level combinations. Displayed are the number of individuals per factor
-  level combination and the vector of means (one column per dimension).}
-  \item{Covariance}{The estimated covariance matrix.}
-  \item{WTS}{The value of the WTS along with degrees of freedom of the
-  central chi-square distribution and p-value.}
-  \item{ATS}{The value of the
-  ATS, degrees of freedom of the central F distribution and the corresponding
-  p-value.}
-  \item{MATS}{The value of the MATS.}
-  \item{resampling}{p-values for the test statistic based on the
-  chosen resampling approach.}
+  level combination and the unweighted treatment effects for each dimension.}
+  \item{Test}{The test statistic(s) and p-value(s) based on the
+  chosen bootstrap approach.}
 }
 \description{
-The rankMANOVA function calculates the ANOVA-type
-statistic (ATS) with bootstrap p-values.
+The rankMANOVA function calculates an ANOVA-type
+statistic (ATS) with (wild) bootstrap p-values for nonparametric factorial designs with
+multivariate data.
 }
 \details{
-
+Implemented is an ANOVA-type test statistic for testing hypotheses formulated in Mann-Whitney-type
+ effects in nonparametric factorial designs. Statistical inference is based on a wild or a sample-specific
+ bootstrap approach. The unweighted treatment effects considered do not depend on sample sizes and allow for
+ transitive ordering. The package thus provides an extension of the univariate \code{\link[rankFD]{rankFD}}
+ package to multivariate data.
 }
-\section{}{
-
+\section{NOTE}{
+ The number of bootstrap iterations has been set to 100 in the examples due
+to runtime restrictions on CRAN. Usually it is recommended to use at least 1000 iterations.
 }
 \examples{
+ library(ElemStatLearn)
+ data("marketing")
+ mymar <- marketing[, c("Sex", "Income", "Edu")]
+ mymar2 <- na.omit(mymar)
+ test <- rankMANOVA(cbind(Income, Edu) ~ Sex, data = mymar2, iter=100,
+  resampling = "WildBS", CPU = 1)
+ summary(test)
 
 }
 \references{
-Konietschke, F., Bathke, A. C., Harrar, S. W. and Pauly, M. (2015).
-  Parametric and nonparametric bootstrap methods for general MANOVA. Journal
-  of Multivariate Analysis, 140, 291-301.
-
-  Friedrich, S., Brunner, E. and Pauly, M. (2017). Permuting longitudinal data
-  in spite of the dependencies. Journal of Multivariate Analysis, 153, 255-265.
-
-   Bathke, A., Friedrich, S., Konietschke, F., Pauly, M., Staffen, W., Strobl, N. and Hoeller, Y. (2016).
-   Using EEG, SPECT, and Multivariate Resampling Methods
-   to Differentiate Between Alzheimer's and other Cognitive Impairments. arXiv preprint arXiv:1606.09004.
-
-  Friedrich, S., Konietschke, F., Pauly, M. (2016). GFD - An
-  R-package for the Analysis of General Factorial Designs. Accepted for publication in
-  Journal of Statistical Software.
-
-  Friedrich, S., and Pauly, M. (2017). MATS: Inference for potentially singular and
-  heteroscedastic MANOVA. arXiv preprint arXiv:1704.03731.
+Dobler, D., Friedrich, S., and Pauly, M. (2017). Nonparametric MANOVA in Mann-Whitney effects.
 }
 \seealso{
-\code{\link{MANOVA.RM}}
+\code{\link[rankFD]{rankFD}}
 }
 
