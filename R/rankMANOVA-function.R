@@ -86,15 +86,22 @@ rankMANOVA <- function(formula, data,
 
   outcome_names <- rownames(nr_hypo)[1]  # names of outcome variables
   # extract names of outcome variables
+  if (grepl("cbind", outcome_names)){
   split1 <- strsplit(outcome_names, "(", fixed = TRUE)[[1]][-1]
   split2 <- strsplit(split1, ")", fixed = TRUE)[[1]]
   split3 <- strsplit(split2, ",")[[1]]
+  } else {
+    split3 <- outcome_names
+  }
 
   EF <- rownames(nr_hypo)[-1]  # names of influencing factors
   nf <- length(EF)
   names(dat) <- c("response", EF)
   #no. dimensions
   d <- ncol(dat$response)
+  if (!is.numeric(d)){
+    d <- 1
+  }
   fl <- NA
   for (aa in 1:nf) {
     fl[aa] <- nlevels(as.factor(dat[, (aa + 1)]))
