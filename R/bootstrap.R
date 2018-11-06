@@ -3,6 +3,8 @@ rankbs <- function(Y, n, H, d, iter, alpha, CPU, seed, resampling){
   a <- length(Y)
   N <- sum(n)
 
+
+
   w <- function(Y, l, i){
     if (d==1){
       Y_new <- c(Y[[l]]$response, Y[[i]]$response)
@@ -58,33 +60,37 @@ rankbs <- function(Y, n, H, d, iter, alpha, CPU, seed, resampling){
   }
 
   #-------------------------------------- Wild Bootstrap ------------------
-  Z <- function(s, r){
+  Z2 <- function(i, l){
+    n_i <- n[i]
+    n_l <- n[l]
 
-    if(d == 1){
-      Y_new <- c(Y[[s]]$response, Y[[r]]$response)
-      R_sr <- rank(Y_new)
-      R_r <- rank(Y[[r]]$response)
-
-      n_s <- n[s]
-      n_r <- n[r]
-
-      Ra_r <- R_sr[(n_s+1):(n_s+n_r)]    # passende n_r Ranks
-      Z_sr <- as.matrix(1/n_s*(Ra_r- R_r) - w_t[r, s])
+    if(d==1){
+      Y_new <- c(Y[[i]]$response, Y[[l]]$response)
+      R_il <- rank(Y_new)
+      R_l <- rank(Y[[l]]$response)
+      Ril_ljk <- R_il[(n_i+1):(n_i+n_l)]    # passende n_r Ranks
+      Z_sr <- as.matrix(-1/n_i*(Ril_ljk - R_l)+ w_t[i, l])
     } else {
-
-    Y_new <- rbind(Y[[s]]$response, Y[[r]]$response)
-    R_sr <- apply(Y_new, 2, rank)
-    R_r <- apply(Y[[r]]$response, 2, rank)
-
-    n_s <- n[s]
-    n_r <- n[r]
-
-    Ra_r <- R_sr[(n_s+1):(n_s+n_r), ]    # passende n_r Ranks
-    Z_sr <- 1/n_s*(Ra_r- R_r) - w_t[, r, s]
+      Y_new <- rbind(Y[[i]]$response, Y[[l]]$response)
+      R_il <- apply(Y_new, 2, rank)
+      R_l <- apply(Y[[l]]$response, 2, rank)
+      Ril_ljk <- R_il[(n_i+1):(n_i+n_l), ]    # passende n_r Ranks
+      Z_sr <- -1/n_i*(Ril_ljk - R_l)+ w_t[, i, l]
     }
+
     return(Z_sr)
   }
 
+  Z2doublist <- list()
+  #matrix(numeric(a^2),a,a)
+  for(k in 1:a){
+    Z2doublist[[k]] <- list()
+    for(ell in 1:a){
+      if(k != ell){
+        Z2doublist[[k]][[ell]] <- Z2(k, ell)
+      }
+    }
+  }
 
   epsilon <- function(l){
     eps <- 2*rbinom(n[l], 1, 1/2)-1
@@ -92,26 +98,29 @@ rankbs <- function(Y, n, H, d, iter, alpha, CPU, seed, resampling){
   }
 
   Z_star <- function(l, i, epsi){
-    Z_star <- colMeans(unlist(epsi[l])*Z(i, l))- colMeans(unlist(epsi[i])*Z(l, i))
+    Z_star <- ifelse(rep(l != i, d), - colMeans(unlist(epsi[l])*Z2doublist[[i]][[l]]) + colMeans(unlist(epsi[i])*Z2doublist[[l]][[i]]), 0)
     return(Z_star)
   }
+
 
   # Wild BS
   wildBS <- function(...){
 
     epsi <- lapply(1:a, epsilon)
     Z_t <- sapply(1:a, function(x) sapply(1:a, function(y) Z_star(y, x, epsi)), simplify = "array")
-
     if(d==1){
-      p_vec_boot <- colMeans(Z_t)
-    } else{
-    p_vec_boot <- c(apply(Z_t, 3, rowMeans))
-    }
+           p_vec_boot <- colMeans(Z_t)
+         } else{
+         p_vec_boot <- c(apply(Z_t, 3, rowMeans))
+         }
+    #p_vec_boot <- c(apply(Z_t, 3, rowMeans))
     TSs <- N* t(p_vec_boot)%*%H%*%p_vec_boot
     return(TSs)
   }
 
-  #-----------------------------------------------------------------------#
+
+  #------------------------------------------------------------------------------------#
+
 
   cl <- parallel::makeCluster(CPU)
   if(seed != 0){
