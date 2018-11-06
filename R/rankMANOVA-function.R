@@ -131,7 +131,7 @@ rankMANOVA <- function(formula, data,
     fac.groups <- do.call(list, dat2[, 2:(nf+1)])
     n.groups <- prod(fl)
 
-    Y <- split(dat2, fac.groups, lex.order = TRUE)
+    Y <- split(dat2, fac.groups)
     n <- sapply(Y, nrow)
     hypo_matrices <- HC_MANOVA(fl, perm_names, fac_names, d)[[1]]
 

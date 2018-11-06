@@ -10,7 +10,8 @@ rankbs <- function(Y, n, H, d, iter, alpha, CPU, seed, resampling){
     Ra <- list()
     Ra[[l]] <- Ranks[1:n[l]]
     Ra[[i]] <- Ranks[(n[l]+1):(n[l]+n[i])]
-    w <- 1/n[l]*(mean(Ra[[i]]) - (n[i]+1)/2)
+    w <- as.matrix(1/n[l]*(mean(Ra[[i]]) - (n[i]+1)/2))
+
       } else {
     Y_new <- rbind(Y[[l]]$response, Y[[i]]$response)
     Ranks <- apply(Y_new, 2, rank)
@@ -22,17 +23,13 @@ rankbs <- function(Y, n, H, d, iter, alpha, CPU, seed, resampling){
     return(w)
   }
 
-  p <- matrix(NA, ncol = d, nrow = a)
-
-  for (i in 1:a){
-    w_tmp <- matrix(NA, nrow = a, ncol = d)
-    for (l in 1:a){
-      w_tmp[l, ] <- w(Y, l, i)
-    }
-    p[i, ] <- colMeans(w_tmp)
-  }
-
-  p_vec <- c(t(p))
+  w_t <- sapply(1:a, function(x) sapply(1:a, function(y) w(Y, y, x), simplify = "array"), simplify = "array")
+  # array: w(l, i) = w_t[, l, i]
+  if(d==1){
+    p_vec <- colMeans(w_t)
+  } else {
+  p_vec <- c(apply(w_t, 3, rowMeans))
+}
 
   # Test statistic
   TS <- N* t(p_vec)%*%H%*%p_vec
@@ -43,25 +40,19 @@ rankbs <- function(Y, n, H, d, iter, alpha, CPU, seed, resampling){
       index[[i]] <- sample(1:n[i], size = n[i], replace = TRUE)
     }
 
-    Y_tmp <- do.call(rbind, Y)
-
     Y_b <- list()
     for(i in 1:a){
       Y_b[[i]] <- Y[[i]][index[[i]], ]
     }
 
-    p_boot <- matrix(NA, ncol = d, nrow = a)
 
-    for (i in 1:a){
-      w_tmp <- matrix(NA, nrow = a, ncol = d)
-      for (l in 1:a){
-        w_tmp[l, ] <- w(Y_b, l, i)
-      }
-      p_boot[i, ] <- colMeans(w_tmp)
-    }
+    w_t_boot <- sapply(1:a, function(x) sapply(1:a, function(y) w(Y_b, y, x), simplify = "array"), simplify = "array")
 
-    p_vec_boot <- c(t(p_boot))
-
+    if(d==1){
+      p_vec_boot <- colMeans(w_t_boot)
+    } else {
+    p_vec_boot <- c(apply(w_t_boot, 3, rowMeans))
+}
     TSs <- N* t(p_vec_boot - p_vec)%*%H%*%(p_vec_boot - p_vec)
     return(TSs)
   }
@@ -78,7 +69,7 @@ rankbs <- function(Y, n, H, d, iter, alpha, CPU, seed, resampling){
       n_r <- n[r]
 
       Ra_r <- R_sr[(n_s+1):(n_s+n_r)]    # passende n_r Ranks
-      Z_sr <- 1/n_s*((Ra_r- R_r) - (mean(Ra_r)-(n_r+1)/2))
+      Z_sr <- as.matrix(1/n_s*(Ra_r- R_r) - w_t[r, s])
     } else {
 
     Y_new <- rbind(Y[[s]]$response, Y[[r]]$response)
@@ -89,38 +80,36 @@ rankbs <- function(Y, n, H, d, iter, alpha, CPU, seed, resampling){
     n_r <- n[r]
 
     Ra_r <- R_sr[(n_s+1):(n_s+n_r), ]    # passende n_r Ranks
-    Z_sr <- 1/n_s*((Ra_r- R_r) - (colMeans(Ra_r)-(n_r+1)/2))
+    Z_sr <- 1/n_s*(Ra_r- R_r) - w_t[, r, s]
     }
     return(Z_sr)
   }
 
+
+  epsilon <- function(l){
+    eps <- 2*rbinom(n[l], 1, 1/2)-1
+    return(eps)
+  }
+
+  Z_star <- function(l, i, epsi){
+    Z_star <- colMeans(unlist(epsi[l])*Z(i, l))- colMeans(unlist(epsi[i])*Z(l, i))
+    return(Z_star)
+  }
+
   # Wild BS
-  wildBS <- function(i, ...){
-    epsilon <- function(l){
-      epsilon <- matrix(2*rbinom(n[l], 1, 1/2)-1, n[l], d)
-      return(epsilon)
+  wildBS <- function(...){
+
+    epsi <- lapply(1:a, epsilon)
+    Z_t <- sapply(1:a, function(x) sapply(1:a, function(y) Z_star(y, x, epsi)), simplify = "array")
+
+    if(d==1){
+      p_vec_boot <- colMeans(Z_t)
+    } else{
+    p_vec_boot <- c(apply(Z_t, 3, rowMeans))
     }
-
-    Z_star <- function(l, i){
-      Z_star <- colMeans(epsilon(i)*Z(l, i))- colMeans(epsilon(l)*Z(i, l))
-      return(Z_star)
-    }
-
-    p_boot <- matrix(NA, ncol = d, nrow = a)
-    for (i in 1:a){
-      Z_tmp <- matrix(NA, nrow = a, ncol = d)
-      for (l in 1:a){
-        Z_tmp[l, ] <- Z_star(l, i)
-      }
-      p_boot[i, ] <- colMeans(Z_tmp)
-    }
-
-    p_vec_boot <- c(t(p_boot))
-
     TSs <- N* t(p_vec_boot)%*%H%*%p_vec_boot
     return(TSs)
   }
-
 
   #-----------------------------------------------------------------------#
 
@@ -142,7 +131,7 @@ rankbs <- function(Y, n, H, d, iter, alpha, CPU, seed, resampling){
 
   result <- list()
   result$statistic <- c(TS, p_value)
-  result$p <- p
+  result$p <- matrix(p_vec, ncol = d, byrow = TRUE)
 
   return(result)
 }
