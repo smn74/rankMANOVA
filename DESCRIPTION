@@ -1,10 +1,10 @@
 Package: rankMANOVA
 Type: Package
 Title: Rank-Based Tests for Multivariate Data in Nonparametric Factorial Designs
-Version: 0.0.4
-Date: 2019-01-10
+Version: 0.0.5
+Date: 2019-09-20
 Author: Sarah Friedrich, Dennis Dobler, Markus Pauly
-Maintainer: Sarah Friedrich <sarah.friedrich@alumni.uni-ulm.de>
+Maintainer: Sarah Friedrich <sarah.friedrich@med.uni-goettingen.de>
 Depends: R (>= 3.4.0)   
 Description: Implemented are an ANOVA-type test statistic for testing hypotheses formulated in Mann-Whitney-type effects in nonparametric factorial designs. Statistical inference is based on a wild or a sample-specific 
          bootstrap approach. The unweighted treatment effects considered do not depend on sample sizes and allow for

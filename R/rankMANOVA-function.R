@@ -6,7 +6,7 @@
 #'
 #' @param formula A model \code{\link{formula}} object. The left hand side
 #'   contains the response variables and the right hand side contains the factor
-#'   variables of interest. An interaction term must be specified. Data must be
+#'   variables of interest. Data must be
 #'   provided in wide format.
 #' @param data A data.frame containing the variables in
 #'   \code{formula}.
@@ -112,6 +112,19 @@ rankMANOVA <- function(formula, data,
   }
   lev_names <- expand.grid(levels)
 
+  # number of hypotheses
+  tmp <- 0
+  for (i in 1:nf) {
+    tmp <- c(tmp, choose(nf, i))
+    nh <- sum(tmp)
+  }
+  # correct formula?
+  if (length(fac_names) != nf && length(fac_names) != nh){
+    stop("Something is wrong with the formula. Please specify all or no interactions in crossed designs.")
+  }
+
+
+
   if (nf == 1) {
     # one-way layout
     dat2 <- dat[order(dat[, 2]), ]
@@ -120,9 +133,14 @@ rankMANOVA <- function(formula, data,
     Y <- split(dat2, fac.groups)
     n <- sapply(Y, nrow)
     hypo <- (diag(fl) - matrix(1 / fl, ncol = fl, nrow = fl)) %x% diag(d)
+    Y2 <- lapply(Y, function(x) x$response)
+    if (d==1){
+      Y2 <- lapply(Y2, function(x) as.matrix(x))
+    }
+
     statistic_out <- rep(NA, 2) # Test statistic, p-value
     # calculate results
-    results <- rankbs(Y, n, hypo, d, iter, alpha, CPU, seed, resampling)
+    results <- rankbs(Y2, n, hypo, d, iter, alpha, CPU, seed, resampling)
     statistic_out <- results$statistic
     names(statistic_out) <- c("Test statistic", "p-value")
   } else {
@@ -133,7 +151,6 @@ rankMANOVA <- function(formula, data,
 
     Y <- split(dat2, fac.groups)
     n <- sapply(Y, nrow)
-    hypo_matrices <- HC_MANOVA(fl, perm_names, fac_names, d)[[1]]
 
     # ---------------------- error detection ------------------------------------
     # no factor combinations with less than 2 observations
@@ -143,12 +160,48 @@ rankMANOVA <- function(formula, data,
     }
     #--------------------------------------------------------------------------
 
+    ## adapting formula argument, if interaction term missing
+    if (nrow(perm_names) != nh) {
+      #stop("For crossed designs, an interaction term must be specified in the formula.")
+      form2 <- as.formula(paste(outcome_names, "~", paste(fac_names, collapse = "*")))
+      perm_names2 <- t(attr(terms(form2), "factors")[-1, ])
+      fac_names2 <- attr(terms(form2), "term.labels")
+      hyps <- HC_MANOVA(fl, perm_names2, fac_names2, d, nh)
+      hypo_matrices <- hyps[[1]]
+      fac_names2 <- hyps[[2]]
+      # choose only relevant entries of the hypo matrices
+      indices <- grep(":", fac_names2, invert = T)
+      hypo_matrices <- lapply(indices, function(x) hypo_matrices[[x]])
+
+    } else if(nf !=1){
+      hyps <- HC_MANOVA(fl, perm_names, fac_names, d, nh)
+      hypo_matrices <- hyps[[1]]
+      fac_names <- hyps[[2]]
+    }
+    # correcting for "empty" combinations (if no interaction specified)
+    n.groups <- prod(fl)
+    if(nf != 1 & length(Y) != n.groups){
+      index <- NULL
+      for(i in 1:length(Y)){
+        if(nrow(Y[[i]]) == 0){
+          index <- c(index, i)
+        }
+      }
+      Y <- Y[-index]
+    }
+    Y2 <- lapply(Y, function(x) x$response)
+    if (d==1){
+      Y2 <- lapply(Y2, function(x) as.matrix(x))
+    }
+
+    #hypo_matrices <- HC_MANOVA(fl, perm_names, fac_names, d, nh)[[1]]
+
     statistic_out <- matrix(NA, nrow = length(hypo_matrices), ncol = 2) # Test statistic, p-value
     rownames(statistic_out) <- fac_names
     colnames(statistic_out) <- c("Test statistic", "p-value")
     # calculate results
     for (i in 1:length(hypo_matrices)) {
-      results <- rankbs(Y, n, hypo_matrices[[i]], d, iter, alpha, CPU, seed, resampling)
+      results <- rankbs(Y2, n, hypo_matrices[[i]], d, iter, alpha, CPU, seed, resampling)
       statistic_out[i, ] <- results$statistic
     }
   }

@@ -7,7 +7,7 @@ rankbs <- function(Y, n, H, d, iter, alpha, CPU, seed, resampling){
 
   w <- function(Y, l, i){
     if (d==1){
-      Y_new <- c(Y[[l]]$response, Y[[i]]$response)
+      Y_new <- c(Y[[l]] , Y[[i]] )
     Ranks <- rank(Y_new)
     Ra <- list()
     Ra[[l]] <- Ranks[1:n[l]]
@@ -15,7 +15,7 @@ rankbs <- function(Y, n, H, d, iter, alpha, CPU, seed, resampling){
     w <- as.matrix(1/n[l]*(mean(Ra[[i]]) - (n[i]+1)/2))
 
       } else {
-    Y_new <- rbind(Y[[l]]$response, Y[[i]]$response)
+    Y_new <- rbind(Y[[l]] , Y[[i]] )
     Ranks <- apply(Y_new, 2, rank)
     Ra <- list()
     Ra[[l]] <- Ranks[1:n[l], ]
@@ -65,15 +65,15 @@ rankbs <- function(Y, n, H, d, iter, alpha, CPU, seed, resampling){
     n_l <- n[l]
 
     if(d==1){
-      Y_new <- c(Y[[i]]$response, Y[[l]]$response)
+      Y_new <- c(Y[[i]] , Y[[l]] )
       R_il <- rank(Y_new)
-      R_l <- rank(Y[[l]]$response)
+      R_l <- rank(Y[[l]] )
       Ril_ljk <- R_il[(n_i+1):(n_i+n_l)]    # passende n_r Ranks
       Z_sr <- as.matrix(-1/n_i*(Ril_ljk - R_l)+ w_t[i, l])
     } else {
-      Y_new <- rbind(Y[[i]]$response, Y[[l]]$response)
+      Y_new <- rbind(Y[[i]] , Y[[l]] )
       R_il <- apply(Y_new, 2, rank)
-      R_l <- apply(Y[[l]]$response, 2, rank)
+      R_l <- apply(Y[[l]] , 2, rank)
       Ril_ljk <- R_il[(n_i+1):(n_i+n_l), ]    # passende n_r Ranks
       Z_sr <- -1/n_i*(Ril_ljk - R_l)+ w_t[, i, l]
     }
