@@ -4,13 +4,13 @@
 \alias{rankMANOVA}
 \title{Rank-based Tests for Multivariate Data in Nonparametric Factorial Designs}
 \usage{
-rankMANOVA(formula, data, iter = 10000, alpha = 0.05, CPU, seed,
-  resampling = "WildBS")
+rankMANOVA(formula, data, iter = 10000, alpha = 0.05, CPU, dec = 3,
+  seed, resampling = "WildBS", nested.levels.unique = FALSE)
 }
 \arguments{
 \item{formula}{A model \code{\link{formula}} object. The left hand side
 contains the response variables and the right hand side contains the factor
-variables of interest. An interaction term must be specified. Data must be
+variables of interest. Data must be
 provided in wide format.}
 
 \item{data}{A data.frame containing the variables in
@@ -24,12 +24,19 @@ statistic. The default option is 10,000.}
 \item{CPU}{The number of cores used for parallel computing. If omitted, cores are
 detected via \code{\link[parallel]{detectCores}}.}
 
+\item{dec}{Number of decimals the results should be rounded to. Default is 3.}
+
 \item{seed}{A random seed for the resampling procedure. If omitted, no
 reproducible seed is set.}
 
 \item{resampling}{The resampling method to be used, one of "bootstrap"
 (sample-specific bootstrap approach) and "WildBS" (wild bootstrap approach with
 Rademacher weights). The default is "WildBS".}
+
+\item{nested.levels.unique}{A logical specifying whether the levels of the nested factor(s)
+are labeled uniquely or not. Default is FALSE, i.e., the levels of the nested
+factor are the same for each level of the main factor. For an example and more explanations
+see the GFD package and the corresponding vignette.}
 }
 \value{
 A \code{rankMANOVA} object containing the following components:
@@ -55,6 +62,7 @@ Implemented is an ANOVA-type test statistic for testing hypotheses formulated in
  The number of bootstrap iterations has been set to 100 in the examples due
 to runtime restrictions on CRAN. Usually it is recommended to use at least 1000 iterations.
 }
+
 \examples{
  library(ElemStatLearn)
  data("marketing")
@@ -71,4 +79,3 @@ Dobler, D., Friedrich, S., and Pauly, M. (2017). Nonparametric MANOVA in Mann-Wh
 \seealso{
 \code{\link[rankFD]{rankFD}}
 }
-

@@ -1,0 +1,152 @@
+<!--
+%\VignetteEngine{knitr::rmarkdown}
+%\VignetteIndexEntry{MANOVA.RM}
+-->
+
+## Introduction
+
+This vignette documents the use of the `rankMANOVA` package for the analysis of nonparametric multivariate data. 
+The package implements the methods proposed by Dobler, Friedrich and Pauly (2019).
+The functionality of the package is very similar to the `MANOVA.RM` package for semi-parametric data, see also the corresponding vignette and the preprint Friedrich, Konietschke and Pauly (2018) on arXiv for more information and examples.
+
+## Theoretical background
+
+We consider a completely nonparametric model
+$$
+X_{ijk} \sim F_{ij}
+$$
+for $d$-variate observation vectors $X_{ik} =(X_{i1k}, ..., X_{idk})$ from group $i$ and individual $k$ and $F_{ij}$ denotes the marginal distribution function. 
+We consider the so-called unweighted nonparametric treatment effects for group $i$ and component $j$
+$$
+p_{ij} = \int G_j dF_{ij},
+$$
+where the reference distribution $G_j$ denotes the unweighted mean of the distribution functions $F_{ij}$. Note that since multivariate measures may be recorded on different scales, we consider separate reference distributions for the different components.
+This is contrary to the repeated measures case of Brunner et al (2017). Furthermore, we use unweighted treatment effects, since they do not depend on the sample sizes and thus provide fixed model constants in contrast to the weighted treatment effects e.g. used in the package `npmv` for nonparametric one-way MANOVA (Woodrow et al, 2017).
+
+Null hypotheses are now formulated in these unweighted effects using contrast matrices, i.e., as $H p = 0$, where the rows of $H$ sum to zero and $p$ denotes the vector of unweighted effects.
+The unweighted effects can be estimated by replacing the unknown distribution functions with their empirical counterparts. A detailed formulation in terms of mid-ranks can be found in Dobler, Friedrich and Pauly (2019). 
+
+We propose to test the null hypothesis $Hp=0$ by the following ANOVA-type test statistic (ATS):
+$$
+T_N = N \widehat{p}'H\widehat{p},
+$$
+where $N=\sum n_i$ denotes the total sample size.
+Inference is based on resampling methods: A nonparametric bootstrap (sampling with replacement from the observation vectors $X_{ik}$) and a wild bootstrap (multiplying the residuals with random weights +/-1) are implemented. Both procedures provide asymptotically correct test procedures and showed adequate finite sample behaviour in simulation studies. Based on these simulation results (see Dobler, Friedrich and Pauly, 2019 for details) we recommend the nonparametric bootstrap for studies with larger sample sizes ($N \geq 100$) and heteroscedastic situations. In all other situations we recommend the wild bootstrap.
+
+To demonstrate the functionality of the `rankMANOVA` package, we use the data set `marketing` in the `ElemStatLearn` package (also discussed in Dobler, Friedrich and Pauly, 2019). This data set contains information on the annual household income along with 13 other demographic factors of shopping mall customers in the San Francisco Bay Area. Since most of the variables in this data set are measured on an ordinal scale, mean-based approaches are not feasible. For our example, we consider the influence of sex and language on annual household income and educational status. The annual household income is categorized in 9 categories, while education has 6 categories. We will analyze this two-dimensional outcome with respect to the influence factors sex (with levels Male vs. Female) and language (with levels English, Spanish, and Other).
+
+## The `rankMANOVA` function
+
+The `rankMANOVA` function calculates the rank-based ATS for multivariate nonparametric data in a design with crossed or nested factors.
+Note that only balanced nested designs (i.e., the same number of factor levels $b$ for each level of the factor $A$) with up to three factors are implemented. Designs involving both crossed and nested factors are not implemented.
+
+### Data Example rankMANOVA (two crossed factors)
+
+The `rankMANOVA` function takes as arguments:
+
+* `formula`: A formula consisting of the outcome variables (bound together via `cbind()`) on the left hand side of a \~ operator and the factor variables of interest on the right hand side.
+* `data`: A data.frame containing the variables in `formula`.
+* `iter`: The number of iterations for the resampling procedure. Default value is 10,000.
+* `alpha`: The significance level, default is 0.05.
+* `resampling`: The resampling method, one of 'bootstrap' and 'WildBS'. Default is
+set to 'WildBS'.
+* `CPU`: The number of cores used for parallel computing. If omitted, cores are detected automatically.
+* `seed`: A random seed for the resampling procedure. If omitted, no reproducible seed is set.
+* `nested.levels.unique`: For nested designs only: A logical specifying whether the levels of the nested factor(s)
+   are labeled uniquely or not. Default is FALSE, i.e., the levels of the nested 
+   factor are the same for each level of the main factor. For an example and more explanations
+   see the GFD package and the corresponding vignette.
+* `dec`: The number of decimals the results should be rounded to. Default is 3.
+
+```{r}
+library(rankMANOVA)
+library(ElemStatLearn)
+data("marketing")
+mymar <- marketing[, c("Sex", "Income", "Edu", "Language")]
+mymar2 <- na.omit(mymar)
+
+# introduce nicer labels
+mymar2$Sex <- factor(mymar2$Sex, labels = c("M", "F"))
+mymar2$Language <- factor(mymar2$Language, labels = c("English", "Spanish", "Other"))
+test1 <- rankMANOVA(cbind(Income, Edu) ~ Sex*Language , data = mymar2, iter=1000, resampling = "bootstrap", seed = 2409, CPU =1)
+summary(test1)
+```
+
+The output consists of several parts: First, some descriptive statistics of the data set are displayed, namely the sample size and the unweighted treatment effects for each factor level combination and each dimension. Second, the test results based on the chosen bootstrap approach are displayed. For each factor, the test statistic and p-value is given.
+
+
+### Post-hoc comparisons
+
+Since the test for the interaction hypothesis yields a significant result, we continue by analyzing male and female participants separately.
+For demonstration purposes, we will only focus on the male participants here.
+We use post-hoc comparisons to further interpret the results. Here, we can distinguish between two types of post-hoc tests:
+
+* univariate comparisons
+* pairwise comparisons to distinguish which groups showed significant differences.
+
+These two types of post-hoc tests are implemented as two separate functions in `rankMANOVA`:
+
+#### univariate endpoints
+
+The function `univariate` has the following arguments:
+
+* `object`: A `rankMANOVA` object.
+* `factor`: The factor for which univariate comparisons are desired. Must be one of the factors used in the main analysis, of course.
+* `data`: The data set to be used for the analysis. If none is specified, the data used for fitting `object` is re-used.
+
+Thus, to infer which univariate endpoints were significant in the `marketing` data of male participants, we can calculate
+
+```{r}
+male <- mymar2[mymar2$Sex == "M", ]
+ph <- univariate(test1, factor = "Language", data = male)
+ph
+```
+
+We find that both endpoints are significant.
+
+#### Pairwise comparisons
+
+Next, we would like to investigate which of the language groups differ with respect to the multivariate and univariate endpoint(s). 
+This is achieved by using the function `pairwise`. 
+This function builds on the `contrMat` function from the `multcomp` package and provides Tukey's pairwise comparisons and Dunnett's many-to-one comparisons. If the univariate endpoints should be tested as well, the parameter `uni` must be set to `TRUE`.
+
+
+```{r}
+# since we consider only male participants:
+m1 <- rankMANOVA(cbind(Income, Edu) ~ Language, data = male, iter = 1000, seed = 290, CPU = 1)
+pairwise(m1, type = "Tukey", factor = "Language", uni = TRUE)
+```
+
+
+ 
+### Nested Design
+To create a data example for a nested design, we use the `curdies` data set from the `GFD` package and extend it by introducing an artificial second outcome variable. In this data set, the levels of the nested factor (site) are named uniquely, i.e., levels 1-3 of factor site belong to "WINTER", whereas levels 4-6 belong to "SUMMER". Therefore, `nested.levels.unique` must be set to TRUE. The code for the analysis is presented below.
+
+
+```{r}
+if (requireNamespace("GFD", quietly = TRUE)) {
+library(GFD)
+data(curdies)
+set.seed(123)
+curdies$dug2 <- curdies$dugesia + rnorm(36)
+
+fit1 <- rankMANOVA(cbind(dugesia, dug2) ~ season + season:site, data = curdies, iter = 1000, nested.levels.unique = TRUE, seed = 123, CPU = 1)
+summary(fit1)
+}
+```
+
+
+
+## References
+
+* Brunner, E., Konietschke, F., Pauly, M., Puri, M. L. (2017). Rank-based procedures in factorial designs:
+Hypotheses about non-parametric treatment effects. Journal of the Royal Statistical Society: Series B
+(Statistical Methodology), 79(5), 1463–1485.
+
+* Dobler, D., Friedrich, S., and Pauly, M. (2019). Nonparametric MANOVA in meaningful effects. Annals of the Institute of Statistical Mathematics, https://doi.org/10.1007/s10463-019-00717-3.
+
+* Friedrich, S., Konietschke, F., and Pauly, M. (2018). Analysis of Multivariate Data and Repeated Measures Designs with the
+R Package MANOVA.RM. arXiv preprint arXiv:1801.08002.
+
+* Woodrow W. Burchett, Amanda R. Ellis, Solomon W. Harrar, Arne C. Bathke (2017). Nonparametric Inference for Multivariate Data:
+  The R Package npmv. Journal of Statistical Software, 76(4), 1-18. doi:10.18637/jss.v076.i04
