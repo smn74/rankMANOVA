@@ -4,20 +4,22 @@
 \alias{pairwise}
 \title{Pairwise post-hoc comparisons in nonparametric multivariate factorial designs}
 \usage{
-pairwise(object, type = NULL, base = 1, factor, uni = FALSE, ...)
+pairwise(object, type = NULL, base = 1, factor = NULL, uni = FALSE,
+  ...)
 }
 \arguments{
-\item{object}{A \code{rankMANOVA} object.}
+\item{object}{A \code{rankMANOVA} object. The pairwise comparisons can only be
+performed for one factor at a time, so this model must be a one-way model.}
 
 \item{type}{The type of the pairwise comparison must be specified here.
 Calculation is based on the contrMat function in package multcomp, see the corresponding help page
 for details on the types of contrasts available.}
 
-\item{base}{an interger specifying which group is considered the baseline group
+\item{base}{An integer specifying which group is considered the baseline group
 for Dunnett contrasts, see \code{\link[multcomp]{contrMat}}.}
 
-\item{factor}{The factor for which pairwise comparisons are desired. Must be one of the factors
-used in the main analysis, of course.}
+\item{factor}{If desired, the specific factor for which the calculations shall be computed.
+Defaults to all factors present in the model (without interactions, though).}
 
 \item{uni}{Logical: should univariate comparisons also be computed? Default is FALSE.}
 
@@ -34,8 +36,11 @@ The pairwise function computes p-values for pairwise comparisons as provided by
  \code{\link[multcomp]{contrMat}}. For the nonparametric comparisons,
  only Tukey's all-pairwise and Dunnett's many-to-one comparisons are used.
 Note that due to the formulation of our effect size vectors, these tests can be performed by applying
-the closed testing principle, i.e., no alpha-corretion is needed, see Dobler, Friedrich and Pauly (2019)
+the closed testing principle, i.e., no alpha-correction is needed, see Dobler, Friedrich and Pauly (2019)
 for details.
+
+NOTE: If an interaction is significant in the main model, the data set should be split accordingly
+for the post-hoc analyses. Thus, the pairwise comparisons are not computed for interaction effects.
 }
 \references{
 Dobler, D., Friedrich, S., and Pauly, M. (2019).

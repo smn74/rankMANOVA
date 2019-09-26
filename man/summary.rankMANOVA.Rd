@@ -12,6 +12,6 @@
 \item{...}{Additional parameters (currently not used)}
 }
 \description{
-Returns a summary of the results including sample sizes and relative treatment effects for all groups as well
+Returns a summary of the results including sample sizes and unweighted treatment effects for all groups as well
 as the test statistic with resampling-based p-values
 }

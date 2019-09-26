@@ -21,7 +21,7 @@ print.rankMANOVA <- function(x, ...) {
 
 #' Summarizing a rankMANOVA object
 #'
-#' Returns a summary of the results including sample sizes and relative treatment effects for all groups as well
+#' Returns a summary of the results including sample sizes and unweighted treatment effects for all groups as well
 #' as the test statistic with resampling-based p-values
 #'
 #' @param object A rankMANOVA object

@@ -4,13 +4,13 @@
 \alias{univariate}
 \title{Univariate post-hoc comparisons in nonparametric multivariate factorial designs}
 \usage{
-univariate(object, factor, data, ...)
+univariate(object, factor = NULL, data, ...)
 }
 \arguments{
 \item{object}{A \code{rankMANOVA} object.}
 
 \item{factor}{The factor for which univariate comparisons are desired. Must be one of the factors
-used in the main analysis, of course.}
+used in the main analysis, of course. Defaults to all factors in the model (without interactions).}
 
 \item{data}{The data set to be used for the analysis. If none is specified, the data used for fitting
 \code{object} is re-used.}
@@ -25,9 +25,15 @@ Univariate post-hoc comparisons in nonparametric multivariate factorial designs
 }
 \details{
 The univariate function computes p-values for univariate comparisons.
+If no factor is specified, all factors in the model are used. In this case, the unweighted effects
+don't change compared to the multivariate model and are thus not returned, only p-values and test
+statistics for the univariate tests.
 Details on the tests can be found in Dobler, Friedrich and Pauly (2019).
 Note that due to the formulation of our effect size vectors, these tests can be performed by applying
-the closed testing principle, i.e., no alpha-corretion is needed.
+the closed testing principle, i.e., no alpha-correction is needed.
+
+NOTE: If an interaction is significant in the main model, the data set should be split accordingly
+for the post-hoc analyses. Thus, the univariate comparisons are not computed for interaction effects.
 }
 \references{
 Dobler, D., Friedrich, S., and Pauly, M. (2019).
