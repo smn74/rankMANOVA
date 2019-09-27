@@ -112,11 +112,11 @@ rankMANOVA <- function(formula, data,
   }
   fl <- NA
   for (aa in 1:nf) {
-    fl[aa] <- nlevels(as.factor(dat[, (aa + 1)]))
+    fl[aa] <- nlevels(as.factor(as.character(dat[, (aa + 1)])))
   }
   levels <- list()
   for (jj in 1:nf) {
-    levels[[jj]] <- levels(as.factor(dat[, (jj + 1)]))
+    levels[[jj]] <- levels(as.factor(as.character(dat[, (jj + 1)])))
   }
   lev_names <- expand.grid(levels)
 
@@ -170,7 +170,7 @@ rankMANOVA <- function(formula, data,
       blev <- list()
       lev_names <- list()
       for (ii in 1:length(levels[[1]])) {
-        blev[[ii]] <- droplevels(as.factor(dat[, 3][dat[, 2] == levels[[1]][ii]]))
+        blev[[ii]] <- droplevels(as.factor(as.character(dat[, 3][dat[, 2] == levels[[1]][ii]])))
         lev_names[[ii]] <- rep(levels[[1]][ii], length(blev[[ii]]))
       }
       if (nf == 2) {

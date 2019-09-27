@@ -51,8 +51,8 @@ univariate <- function(object, factor = NULL, data, ...){
   }
 
   if((nf == 1 || fac.spec ) && !is.factor(data[, factor])){
-    data[, factor] <- as.factor(data[, factor])
-    warning(paste("The variable", factor, "was transformed into a factor. Please check for correct labeling!"))
+    data[, factor] <- as.factor(as.character(data[, factor]))
+    #warning(paste("The variable", factor, "was transformed into a factor. Please check for correct labeling!"))
   }
 
   d <- object$other$dim
@@ -150,7 +150,7 @@ pairwise <- function(object, type = NULL, base = 1,
   d <- object$other$dim
   nf <- object$other$nf
 
-# for a specific factor only
+  # for a specific factor only
   if(! is.null(factor) || nf == 1){
 
     if(is.null(factor) && nf == 1){
@@ -158,11 +158,11 @@ pairwise <- function(object, type = NULL, base = 1,
     }
 
     if(!(factor %in% object$other$fac_names)){
-     stop("The requested factor is not part of the model.")
+      stop("The requested factor is not part of the model.")
     }
 
     if(grepl(":", factor)){
-         stop("Pairwise comparisons cannot be computed for interaction effects.")
+      stop("Pairwise comparisons cannot be computed for interaction effects.")
     }
 
     # number of levels of the relevant factor:
@@ -173,50 +173,51 @@ pairwise <- function(object, type = NULL, base = 1,
     M <- contrMat(n.fac, type = type, base)
     # additionally inflate the contrast matrix by the number of other factor levels
     if(nf != 1){
-      n.fl <- object$other$fl[-which(object$other$fac_names == factor)]
-      contmat <- M %x% diag(d) %x% diag(prod(n.fl))
+      p.n.fl <- prod(object$other$fl[-which(object$other$fac_names == factor)])
     } else {
-      n.fl <- 0
-      contmat <- M %x% diag(d)
+      p.n.fl <- 1
+      #contmat <- M %x% diag(d)
     }
-
-    i <- 1
-    cm <- list()
-    while(i < nrow(contmat)){
-      cm[[i]] <- contmat[i:(i+d+prod(n.fl)-1), ]
-      i <- i+d+prod(n.fl)
-    }
-    if(length(cm)!=1){
-      cm <- cm[-which(sapply(cm, is.null))]
-    }
-
-    pval <- t(sapply(cm, function(x){
-      H <- t(x)%*%MASS::ginv(x%*%t(x))%*%x
-      results <- rankbs(object$other$Y2, n, H, d, iter = input$iter, alpha = input$alpha,
-                        resampling = input$resampling, CPU = input$CPU, seed = input$seed)
-      statistic_out <- round(results$statistic, input$dec)
-    }))
   } else {
     # for all factors in the model
     n <- object$Descriptive$n
     lev <- subset(object$Descriptive, select = 1:n)
     lev <- lev[-ncol(lev)]
-    if(nf == 1){
-      names(n) <- lev[, 1]
-    } else {
-      names(n) <- sort(do.call(paste, c(lev, sep = " ")))
-    }
+    names(n) <- do.call(paste, c(lev, sep = " "))
     M <- contrMat(n, type = type, base)
-    contmat <- M %x%  t(rep(1, d))
-
-    pval <- t(apply(contmat, 1, function(x){
-      # x is a row vector, hence t() must be switched in the computation of H
-      H <- x%*%MASS::ginv(t(x)%*%x)%*%t(x)
-      results <- rankbs(object$other$Y2, n, H, d, iter = input$iter, alpha = input$alpha,
-                        resampling = input$resampling, CPU = input$CPU, seed = input$seed)
-      statistic_out <- round(results$statistic, input$dec)
-    }))
+    p.n.fl <- 1
   }
+
+  contmat <- M %x% diag(d) %x% diag(p.n.fl)
+  i <- 1
+  cm <- list()
+  while(i < nrow(contmat)){
+    cm[[i]] <- contmat[i:(i+d*p.n.fl-1), ]
+    i <- i+d*p.n.fl
+  }
+  if(length(cm)!=1){
+    cm <- cm[-which(sapply(cm, is.null))]
+  }
+
+  pval <- t(sapply(cm, function(x){
+    H <- t(x)%*%MASS::ginv(x%*%t(x))%*%x
+    results <- rankbs(object$other$Y2, n, H, d, iter = input$iter, alpha = input$alpha,
+                      resampling = input$resampling, CPU = input$CPU, seed = input$seed)
+    statistic_out <- round(results$statistic, input$dec)
+  }))
+
+
+
+  # contmat <- M %x% diag(d)
+  #
+  # pval <- t(apply(contmat, 1, function(x){
+  #   # x is a row vector, hence t() must be switched in the computation of H
+  #   H <- x%*%MASS::ginv(t(x)%*%x)%*%t(x)
+  #   results <- rankbs(object$other$Y2, n, H, d, iter = input$iter, alpha = input$alpha,
+  #                     resampling = input$resampling, CPU = input$CPU, seed = input$seed)
+  #   statistic_out <- round(results$statistic, input$dec)
+  # }))
+
 
   rownames(pval) <- rownames(M)
   colnames(pval) <- c("Statistic", "multivariate p-value")
@@ -227,10 +228,10 @@ pairwise <- function(object, type = NULL, base = 1,
 
     if(is.null(factor)){
       factor <- object$other$fac_names
-    if(nf != 1){
-      factor <- paste(object$other$fac_names[!grepl(":", object$other$fac_names)], collapse = "+")
+      if(nf != 1){
+        factor <- paste(object$other$fac_names[!grepl(":", object$other$fac_names)], collapse = "+")
+      }
     }
-}
 
     pval2 <- lapply(1:d, function(i){
       form <- as.formula(paste(outcome[i], "~", factor))
@@ -241,8 +242,8 @@ pairwise <- function(object, type = NULL, base = 1,
       EF <- rownames(nr_hypo)[-1]  # names of influencing factors
       names(dat) <- c("response", EF)
       if (!grepl("+", factor, fixed = TRUE)) {
-      dat2 <- dat[order(dat[, 2]), ]
-      fac.groups <- dat2[, 2]
+        dat2 <- dat[order(dat[, 2]), ]
+        fac.groups <- dat2[, 2]
       } else {
         dat2 <- dat[do.call(order, dat[, 2:(nf + 1)]), ]
         fac.groups <- do.call(list, dat2[, 2:(nf+1)])
@@ -255,11 +256,11 @@ pairwise <- function(object, type = NULL, base = 1,
       M <- contrMat(nuni, type = type, base)
 
       out <- t(apply(M, 1, function(x) {
-      # x is a row vector, hence t() must be switched in the computation of H
-      H <- x%*%MASS::ginv(t(x)%*%x)%*%t(x)
-      results <- rankbs(Y2, nuni, H, d = 1, iter = input$iter, alpha = input$alpha,
-                        resampling = input$resampling, CPU = input$CPU, seed = input$seed)
-      statistic_out <- round(results$statistic, input$dec)
+        # x is a row vector, hence t() must be switched in the computation of H
+        H <- x%*%MASS::ginv(t(x)%*%x)%*%t(x)
+        results <- rankbs(Y2, nuni, H, d = 1, iter = input$iter, alpha = input$alpha,
+                          resampling = input$resampling, CPU = input$CPU, seed = input$seed)
+        statistic_out <- round(results$statistic, input$dec)
       }))
 
       colnames(out) <- c("Statistic", outcome[i])
