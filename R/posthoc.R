@@ -49,6 +49,7 @@ univariate <- function(object, factor = NULL, data, ...){
   if(!test1){
     data <- object$input$data
   }
+  data <- as.data.frame(data)
 
   if((nf == 1 || fac.spec ) && !is.factor(data[, factor])){
     data[, factor] <- as.factor(as.character(data[, factor]))
@@ -188,7 +189,7 @@ pairwise <- function(object, type = NULL, base = 1,
     p.n.fl <- 1
   }
 
-  contmat <- M %x% diag(d) %x% diag(p.n.fl)
+  contmat <- diag(d) %x% M %x% diag(p.n.fl)
   i <- 1
   cm <- list()
   while(i < nrow(contmat)){

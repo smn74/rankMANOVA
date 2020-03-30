@@ -134,13 +134,14 @@ rankbs <- function(Y, n, H, d, iter, alpha, CPU, seed, resampling){
   }
   quant <- quantile(unlist(bs), prob = 1-alpha)
   ecdf <- ecdf(unlist(bs))
-  p_value <- 1-ecdf(TS)
+  p_value <- 1-ecdf(TS)    # alternative: p_value <- mean(as.numeric(TS) <= unlist(bs))
 
   parallel::stopCluster(cl)
 
   result <- list()
   result$statistic <- c(TS, p_value)
   result$p <- matrix(p_vec, ncol = d, byrow = TRUE)
+  result$quant <- quant
 
   return(result)
 }

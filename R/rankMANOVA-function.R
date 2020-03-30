@@ -65,7 +65,7 @@
 
 rankMANOVA <- function(formula, data,
                        iter = 10000, alpha = 0.05, CPU, dec = 3,
-                       seed, resampling = "WildBS", nested.levels.unique = FALSE){
+                       seed, resampling = "bootstrap", nested.levels.unique = FALSE){
 
   if (!(resampling %in% c("bootstrap", "WildBS"))){
     stop("Resampling must be one of 'bootstrap' and 'WildBS'!")
@@ -267,7 +267,7 @@ rankMANOVA <- function(formula, data,
 
   # other information needed, eg, for post-hoc tests-------------------#
   other <- list(dim=d, nf = nf, fl = fl, outcomes = split3, fac_names = fac_names,
-                Y2 = Y2)
+                Y2 = Y2, quant = results$quant)
 
 
   # Output ------------------------------------------------------
