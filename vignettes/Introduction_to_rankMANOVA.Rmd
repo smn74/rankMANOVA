@@ -33,7 +33,7 @@ $$
 where $N=\sum n_i$ denotes the total sample size.
 Inference is based on resampling methods: A nonparametric bootstrap (sampling with replacement from the observation vectors $X_{ik}$) and a wild bootstrap (multiplying the residuals with random weights +/-1) are implemented. Both procedures provide asymptotically correct test procedures and showed adequate finite sample behaviour in simulation studies. Based on these simulation results (see Dobler, Friedrich and Pauly, 2019 for details) we recommend the nonparametric bootstrap for studies with larger sample sizes ($N \geq 100$) and heteroscedastic situations. In all other situations we recommend the wild bootstrap.
 
-To demonstrate the functionality of the `rankMANOVA` package, we use the data set `marketing` in the `ElemStatLearn` package (also discussed in Dobler, Friedrich and Pauly, 2019). This data set contains information on the annual household income along with 13 other demographic factors of shopping mall customers in the San Francisco Bay Area. Since most of the variables in this data set are measured on an ordinal scale, mean-based approaches are not feasible. For our example, we consider the influence of sex and language on annual household income and educational status. The annual household income is categorized in 9 categories, while education has 6 categories. We will analyze this two-dimensional outcome with respect to the influence factors sex (with levels Male vs. Female) and language (with levels English, Spanish, and Other).
+To demonstrate the functionality of the `rankMANOVA` package, we use the data set `marketing` from Hastie et al.(2009). The data set was previously included in the `ElemStatLearn` package and is also discussed in Dobler, Friedrich and Pauly (2019). This data set contains information on the annual household income along with 13 other demographic factors of shopping mall customers in the San Francisco Bay Area. Since most of the variables in this data set are measured on an ordinal scale, mean-based approaches are not feasible. For our example, we consider the influence of sex and language on annual household income and educational status. The annual household income is categorized in 9 categories, while education has 6 categories. We will analyze this two-dimensional outcome with respect to the influence factors sex (with levels Male vs. Female) and language (with levels English, Spanish, and Other).
 
 ## The `rankMANOVA` function
 
@@ -60,7 +60,6 @@ set to 'WildBS'.
 
 ```{r}
 library(rankMANOVA)
-library(ElemStatLearn)
 data("marketing")
 mymar <- marketing[, c("Sex", "Income", "Edu", "Language")]
 mymar2 <- na.omit(mymar)
@@ -150,3 +149,5 @@ R Package MANOVA.RM. arXiv preprint arXiv:1801.08002.
 
 * Woodrow W. Burchett, Amanda R. Ellis, Solomon W. Harrar, Arne C. Bathke (2017). Nonparametric Inference for Multivariate Data:
   The R Package npmv. Journal of Statistical Software, 76(4), 1-18. doi:10.18637/jss.v076.i04
+
+* Hastie, T., Tibshirani, R., Friedman, J. H., & Friedman, J. H. (2009). The elements of statistical learning: data mining, inference, and prediction (Vol. 2, pp. 1-758). New York: Springer.

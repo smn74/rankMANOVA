@@ -4,8 +4,7 @@
 \alias{pairwise}
 \title{Pairwise post-hoc comparisons in nonparametric multivariate factorial designs}
 \usage{
-pairwise(object, type = NULL, base = 1, factor = NULL, uni = FALSE,
-  ...)
+pairwise(object, type = NULL, base = 1, factor = NULL, uni = FALSE, ...)
 }
 \arguments{
 \item{object}{A \code{rankMANOVA} object. The pairwise comparisons can only be

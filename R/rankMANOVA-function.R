@@ -43,13 +43,13 @@
 #' to runtime restrictions on CRAN. Usually it is recommended to use at least 1000 iterations.
 #'
 #' @examples
-#'  library(ElemStatLearn)
 #'  data("marketing")
 #'  mymar <- marketing[, c("Sex", "Income", "Edu")]
 #'  mymar2 <- na.omit(mymar)
 #'  test <- rankMANOVA(cbind(Income, Edu) ~ Sex, data = mymar2, iter=100,
 #'   resampling = "WildBS", CPU = 1)
 #'  summary(test)
+#'
 #'
 #' @seealso \code{\link[rankFD]{rankFD}}
 #'

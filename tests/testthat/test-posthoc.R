@@ -1,6 +1,5 @@
 context("Post-hoc comparisons")
 
-library(ElemStatLearn)
 data("marketing")
 
 test_that("Univariate comparisons - subset of data", {

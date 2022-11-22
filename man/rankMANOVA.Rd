@@ -4,8 +4,17 @@
 \alias{rankMANOVA}
 \title{Rank-based Tests for Multivariate Data in Nonparametric Factorial Designs}
 \usage{
-rankMANOVA(formula, data, iter = 10000, alpha = 0.05, CPU, dec = 3,
-  seed, resampling = "WildBS", nested.levels.unique = FALSE)
+rankMANOVA(
+  formula,
+  data,
+  iter = 10000,
+  alpha = 0.05,
+  CPU,
+  dec = 3,
+  seed,
+  resampling = "bootstrap",
+  nested.levels.unique = FALSE
+)
 }
 \arguments{
 \item{formula}{A model \code{\link{formula}} object. The left hand side
@@ -63,16 +72,6 @@ Implemented is an ANOVA-type test statistic for testing hypotheses formulated in
 to runtime restrictions on CRAN. Usually it is recommended to use at least 1000 iterations.
 }
 
-\examples{
- library(ElemStatLearn)
- data("marketing")
- mymar <- marketing[, c("Sex", "Income", "Edu")]
- mymar2 <- na.omit(mymar)
- test <- rankMANOVA(cbind(Income, Edu) ~ Sex, data = mymar2, iter=100,
-  resampling = "WildBS", CPU = 1)
- summary(test)
-
-}
 \references{
 Dobler, D., Friedrich, S., and Pauly, M. (2017). Nonparametric MANOVA in Mann-Whitney effects.
 }

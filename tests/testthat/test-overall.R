@@ -1,6 +1,5 @@
 context("Overall functioning")
 
-library(ElemStatLearn)
 data("marketing")
 
 test_that("One-way layout", {

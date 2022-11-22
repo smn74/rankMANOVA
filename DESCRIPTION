@@ -1,8 +1,8 @@
 Package: rankMANOVA
 Type: Package
 Title: Rank-Based Tests for Multivariate Data in Nonparametric Factorial Designs
-Version: 0.0.7
-Date: 2021-09-14
+Version: 0.0.8
+Date: 2022-11-22
 Author: Sarah Friedrich, Dennis Dobler, Markus Pauly
 Maintainer: Sarah Friedrich <sarah.friedrich@math.uni-augsburg.de>
 Depends: R (>= 3.4.0)   
@@ -22,12 +22,11 @@ Imports:
     multcomp
 LazyData: TRUE
 Suggests:
-    ElemStatLearn (>= 2015.6.26),
     knitr,
     rmarkdown,
     GFD
 Encoding: UTF-8
-RoxygenNote: 6.1.1
+RoxygenNote: 7.2.2
 VignetteBuilder: knitr, rmarkdown
 URL: http://github.com/smn74/rankMANOVA
 BugReports: http://github.com/smn74/rankMANOVA/issues

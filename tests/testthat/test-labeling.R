@@ -1,6 +1,5 @@
 context("Correct labelling of factors")
 
-library(ElemStatLearn)
 data("marketing")
 mymar <- marketing[, c("Sex", "Income", "Edu", "Language")]
 mymar2 <- na.omit(mymar)
