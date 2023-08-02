@@ -203,7 +203,8 @@ pairwise <- function(object, type = NULL, base = 1,
   pval <- t(sapply(cm, function(x){
     H <- t(x)%*%MASS::ginv(x%*%t(x))%*%x
     results <- rankbs(object$other$Y2, n, H, d, iter = input$iter, alpha = input$alpha,
-                      resampling = input$resampling, CPU = input$CPU, seed = input$seed)
+                      resampling = input$resampling, CPU = input$CPU,
+                      para = FALSE, seed = input$seed)
     statistic_out <- round(results$statistic, input$dec)
   }))
 
@@ -260,7 +261,8 @@ pairwise <- function(object, type = NULL, base = 1,
         # x is a row vector, hence t() must be switched in the computation of H
         H <- x%*%MASS::ginv(t(x)%*%x)%*%t(x)
         results <- rankbs(Y2, nuni, H, d = 1, iter = input$iter, alpha = input$alpha,
-                          resampling = input$resampling, CPU = input$CPU, seed = input$seed)
+                          resampling = input$resampling, para = FALSE,
+                          CPU = input$CPU, seed = input$seed)
         statistic_out <- round(results$statistic, input$dec)
       }))
 

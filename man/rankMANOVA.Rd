@@ -9,6 +9,7 @@ rankMANOVA(
   data,
   iter = 10000,
   alpha = 0.05,
+  para = FALSE,
   CPU,
   dec = 3,
   seed,
@@ -29,6 +30,8 @@ provided in wide format.}
 statistic. The default option is 10,000.}
 
 \item{alpha}{A number specifying the significance level; the default is 0.05.}
+
+\item{para}{Logical: should parallel computing be used? Default is FALSE.}
 
 \item{CPU}{The number of cores used for parallel computing. If omitted, cores are
 detected via \code{\link[parallel]{detectCores}}.}
@@ -72,6 +75,16 @@ Implemented is an ANOVA-type test statistic for testing hypotheses formulated in
 to runtime restrictions on CRAN. Usually it is recommended to use at least 1000 iterations.
 }
 
+\examples{
+ data("marketing")
+ mymar <- marketing[, c("Sex", "Income", "Edu")]
+ mymar2 <- na.omit(mymar)
+ test <- rankMANOVA(cbind(Income, Edu) ~ Sex, data = mymar2, iter=100,
+  resampling = "WildBS", CPU = 1)
+ summary(test)
+
+
+}
 \references{
 Dobler, D., Friedrich, S., and Pauly, M. (2017). Nonparametric MANOVA in Mann-Whitney effects.
 }

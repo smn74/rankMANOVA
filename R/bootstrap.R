@@ -1,4 +1,4 @@
-rankbs <- function(Y, n, H, d, iter, alpha, CPU, seed, resampling){
+rankbs <- function(Y, n, H, d, iter, alpha, para, CPU, seed, resampling){
 
   a <- length(Y)
   N <- sum(n)
@@ -121,7 +121,7 @@ rankbs <- function(Y, n, H, d, iter, alpha, CPU, seed, resampling){
 
   #------------------------------------------------------------------------------------#
 
-
+if(para){
   cl <- parallel::makeCluster(CPU)
   if(seed != 0){
     parallel::clusterSetRNGStream(cl, iseed = seed)
@@ -132,11 +132,18 @@ rankbs <- function(Y, n, H, d, iter, alpha, CPU, seed, resampling){
   } else if (resampling == "WildBS"){
     bs <- parallel::parSapply(cl, 1:iter, FUN = wildBS)
   }
+  parallel::stopCluster(cl)
+} else {
+    set.seed(seed)
+  if(resampling == "bootstrap"){
+    bs <- lapply(1:iter, FUN = boot)
+  } else if (resampling == "WildBS"){
+    bs <- lapply(1:iter, FUN = wildBS)
+  }
+}
   quant <- quantile(unlist(bs), prob = 1-alpha)
   ecdf <- ecdf(unlist(bs))
   p_value <- 1-ecdf(TS)    # alternative: p_value <- mean(as.numeric(TS) <= unlist(bs))
-
-  parallel::stopCluster(cl)
 
   result <- list()
   result$statistic <- c(TS, p_value)

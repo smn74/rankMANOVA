@@ -16,6 +16,7 @@
 #' @param resampling The resampling method to be used, one of "bootstrap"
 #'   (sample-specific bootstrap approach) and "WildBS" (wild bootstrap approach with
 #'   Rademacher weights). The default is "WildBS".
+#' @param para Logical: should parallel computing be used? Default is FALSE.
 #' @param CPU The number of cores used for parallel computing. If omitted, cores are
 #'   detected via \code{\link[parallel]{detectCores}}.
 #' @param seed A random seed for the resampling procedure. If omitted, no
@@ -64,7 +65,8 @@
 #' @export
 
 rankMANOVA <- function(formula, data,
-                       iter = 10000, alpha = 0.05, CPU, dec = 3,
+                       iter = 10000, alpha = 0.05,
+                       para = FALSE, CPU, dec = 3,
                        seed, resampling = "bootstrap", nested.levels.unique = FALSE){
 
   if (!(resampling %in% c("bootstrap", "WildBS"))){
@@ -73,11 +75,12 @@ rankMANOVA <- function(formula, data,
 
   output <- list()
 
+if(para){
   test1 <- hasArg(CPU)
   if(!test1){
     CPU <- parallel::detectCores()
   }
-
+}
   test2 <- hasArg(seed)
   if(!test2){
     seed <- 0
@@ -85,7 +88,7 @@ rankMANOVA <- function(formula, data,
 
   input_list <- list(formula = formula, data = data,
                      iter = iter, alpha = alpha, resampling = resampling, dec = dec,
-                     CPU = CPU, seed = seed)
+                    seed = seed)
 
   dat <- model.frame(formula, data)
   nr_hypo <- attr(terms(formula), "factors")
@@ -257,7 +260,7 @@ rankMANOVA <- function(formula, data,
   colnames(statistic_out) <- c("Test statistic", "p-value")
   # calculate results
   for (i in 1:length(hypo_matrices)) {
-    results <- rankbs(Y2, n, hypo_matrices[[i]], d, iter, alpha, CPU, seed, resampling)
+    results <- rankbs(Y2, n, hypo_matrices[[i]], d, iter, alpha, para, CPU, seed, resampling)
     statistic_out[i, ] <- round(results$statistic, dec)
   }
 
